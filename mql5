@@ -1,0 +1,61 @@
+
+// Risk Management Tool SmartRiskT
+// Developer's Site: forexroboteasy.com
+// Development: Forex Robot Easy Team
+
+// Function to estimate potential profits or losses
+void EstimateProfitsOrLosses(double positionSize, double entryPrice, double stopLoss, double takeProfit) {
+    double spreadCost = GetSpreadCost(); // Get the spread cost from input parameters
+    double pips = (takeProfit - entryPrice) / _Point; // Calculate the number of pips
+    double profitOrLoss = (positionSize * pips) - (positionSize * spreadCost); // Calculate the potential profit or loss
+    Print('Estimated Profit/Loss: ', profitOrLoss);
+}
+
+// Function to calculate lot size or margin
+double CalculateLotSizeOrMargin(double accountBalance, double riskPercentage, double stopLoss, double entryPrice) {
+    double riskAmount = accountBalance * (riskPercentage / 100); // Calculate the risk amount
+    double pips = entryPrice - stopLoss;
+    double lotSize = riskAmount / (pips * _Point); // Calculate the lot size
+    double margin = lotSize * entryPrice / _Leverage; // Calculate the required margin
+    return lotSize;
+}
+
+// Function to place orders with calculated lot size or margin
+void PlaceOrderWithLotSizeOrMargin(double lotSizeOrMargin, int orderType, double entryPrice, double stopLoss, double takeProfit) {
+    // Place the order with the calculated lot size or margin
+    if(orderType == OP_BUY) {
+        int ticket = OrderSend(Symbol(), OP_BUY, lotSizeOrMargin, entryPrice, 0, stopLoss, takeProfit, 'Order with calculated lot size or margin', 0, 0, Green);
+        if(ticket > 0) {
+            Print('Order placed successfully');
+        }
+        else {
+            Print('Failed to place order');
+        }
+    }
+    else if(orderType == OP_SELL) {
+        int ticket = OrderSend(Symbol(), OP_SELL, lotSizeOrMargin, entryPrice, 0, stopLoss, takeProfit, 'Order with calculated lot size or margin', 0, 0, Red);
+        if(ticket > 0) {
+            Print('Order placed successfully');
+        }
+        else {
+            Print('Failed to place order');
+        }
+    }
+}
+
+// Main function
+void OnTick() {
+    // Example usage of the functions
+    double positionSize = 0.1; // Example position size
+    double entryPrice = 1.2000; // Example entry price
+    double stopLoss = 1.1950; // Example stop loss
+    double takeProfit = 1.2100; // Example take profit
+
+    EstimateProfitsOrLosses(positionSize, entryPrice, stopLoss, takeProfit);
+    
+    double accountBalance = AccountBalance(); // Get the account balance
+    double riskPercentage = 2.5; // Example risk percentage
+    double calculatedLotSizeOrMargin = CalculateLotSizeOrMargin(accountBalance, riskPercentage, stopLoss, entryPrice);
+    
+    PlaceOrderWithLotSizeOrMargin(calculatedLotSizeOrMargin, OP_BUY, entryPrice, stopLoss, takeProfit);
+}
